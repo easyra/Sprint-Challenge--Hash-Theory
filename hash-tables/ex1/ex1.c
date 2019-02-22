@@ -12,10 +12,12 @@ Answer *get_indices_of_item_weights(int *weights, int length, int limit)
   //store a key/pair where the key equals the weight minus limit
   //if key already exists in hash than that element plus key would equal limit
   for(int i = 0; i < length; i++){
-    if(hash_table_retrieve(ht, weights[i]) > -1){
+    int index = hash_table_retrieve(ht, weights[i]);
+    if( index > -1){
       Answer *answer = malloc(sizeof(Answer));      
-      answer->index_1 = i;
-      answer->index_2 = hash_table_retrieve(ht, weights[i]);
+      answer->index_1 = weights[i] > weights[index] ? i : index ;
+      answer->index_2 = weights[i] < weights[index] ? i : index;
+
       return answer;
     } else {
       hash_table_insert(ht, limit - weights[i], i);
@@ -62,136 +64,136 @@ int main(void)
 }
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "hashtable.h"
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <string.h>
+// #include "hashtable.h"
 
-LinkedPair *create_pair(int key, int value)
-{
-  LinkedPair *pair = malloc(sizeof(LinkedPair));
-  pair->key = key;
-  pair->value = value;
-  pair->next = NULL;
+// LinkedPair *create_pair(int key, int value)
+// {
+//   LinkedPair *pair = malloc(sizeof(LinkedPair));
+//   pair->key = key;
+//   pair->value = value;
+//   pair->next = NULL;
 
-  return pair;
-}
+//   return pair;
+// }
 
 // djb2 hash function
-unsigned int hash(unsigned int x, int max) {
-  x = ((x >> 16) ^ x) * 0x45d9f3b;
-  x = ((x >> 16) ^ x) * 0x45d9f3b;
-  x = (x >> 16) ^ x;
-  return x % max;
-}
+// unsigned int hash(unsigned int x, int max) {
+//   x = ((x >> 16) ^ x) * 0x45d9f3b;
+//   x = ((x >> 16) ^ x) * 0x45d9f3b;
+//   x = (x >> 16) ^ x;
+//   return x % max;
+// }
 
-void destroy_pair(LinkedPair *pair)
-{
-  if (pair != NULL) free(pair);
-}
+// void destroy_pair(LinkedPair *pair)
+// {
+//   if (pair != NULL) free(pair);
+// }
 
-HashTable *create_hash_table(int capacity)
-{
-  HashTable *ht = malloc(sizeof(HashTable));
-  ht->capacity = capacity;
-  ht->storage = calloc(capacity, sizeof(LinkedPair *));
+// HashTable *create_hash_table(int capacity)
+// {
+//   HashTable *ht = malloc(sizeof(HashTable));
+//   ht->capacity = capacity;
+//   ht->storage = calloc(capacity, sizeof(LinkedPair *));
 
-  return ht;
-}
+//   return ht;
+// }
 
-void hash_table_insert(HashTable *ht, int key, int value)
-{
-  unsigned int index = hash(key, ht->capacity);
+// void hash_table_insert(HashTable *ht, int key, int value)
+// {
+//   unsigned int index = hash(key, ht->capacity);
 
-  LinkedPair *current_pair = ht->storage[index];
-  LinkedPair *last_pair;
+//   LinkedPair *current_pair = ht->storage[index];
+//   LinkedPair *last_pair;
 
-  while (current_pair != NULL && current_pair->key != key) {
-    last_pair = current_pair;
-    current_pair = last_pair->next;
-  }
+//   while (current_pair != NULL && current_pair->key != key) {
+//     last_pair = current_pair;
+//     current_pair = last_pair->next;
+//   }
 
-  if (current_pair != NULL) {
-    current_pair->value = value;
-  } else {
-    LinkedPair *new_pair = create_pair(key, value);
-    new_pair->next = ht->storage[index];
-    ht->storage[index] = new_pair;
-  }
-}
+//   if (current_pair != NULL) {
+//     current_pair->value = value;
+//   } else {
+//     LinkedPair *new_pair = create_pair(key, value);
+//     new_pair->next = ht->storage[index];
+//     ht->storage[index] = new_pair;
+//   }
+// }
 
-void hash_table_remove(HashTable *ht, int key)
-{
-  unsigned int index = hash(key, ht->capacity);
+// void hash_table_remove(HashTable *ht, int key)
+// {
+//   unsigned int index = hash(key, ht->capacity);
 
-  LinkedPair *current_pair = ht->storage[index];
-  LinkedPair *previous_pair = NULL;
+//   LinkedPair *current_pair = ht->storage[index];
+//   LinkedPair *previous_pair = NULL;
 
-  while (current_pair != NULL && current_pair->key != key) {
-    previous_pair = current_pair;
-    current_pair = current_pair->next;
-  }
+//   while (current_pair != NULL && current_pair->key != key) {
+//     previous_pair = current_pair;
+//     current_pair = current_pair->next;
+//   }
 
-  if (current_pair == NULL) {
-    fprintf(stderr, "Unable to remove entry with key: %d\n", key);
-  } else {
-    if (previous_pair == NULL) {  // Removing the first element in the Linked List
-      ht->storage[index] = current_pair->next;
-    } else {
-      previous_pair->next = current_pair->next;
-    }
+//   if (current_pair == NULL) {
+//     fprintf(stderr, "Unable to remove entry with key: %d\n", key);
+//   } else {
+//     if (previous_pair == NULL) {  // Removing the first element in the Linked List
+//       ht->storage[index] = current_pair->next;
+//     } else {
+//       previous_pair->next = current_pair->next;
+//     }
 
-    destroy_pair(current_pair);
-  }
-}
+//     destroy_pair(current_pair);
+//   }
+// }
 
-int hash_table_retrieve(HashTable *ht, int key)
-{
-  unsigned int index = hash(key, ht->capacity);
-  LinkedPair *current_pair = ht->storage[index];
+// int hash_table_retrieve(HashTable *ht, int key)
+// {
+//   unsigned int index = hash(key, ht->capacity);
+//   LinkedPair *current_pair = ht->storage[index];
 
-  while (current_pair != NULL) {
-    if (current_pair->key == key) {
-      return current_pair->value;
-    }
+//   while (current_pair != NULL) {
+//     if (current_pair->key == key) {
+//       return current_pair->value;
+//     }
 
-    current_pair = current_pair->next;
-  }
+//     current_pair = current_pair->next;
+//   }
 
-  return -1;
-}
+//   return -1;
+// }
 
-void destroy_hash_table(HashTable *ht)
-{
-  LinkedPair *current_pair;
-  LinkedPair *pair_to_destroy;
+// void destroy_hash_table(HashTable *ht)
+// {
+//   LinkedPair *current_pair;
+//   LinkedPair *pair_to_destroy;
 
-  for (int i = 0 ; i < ht->capacity; i++) {
-    current_pair = ht->storage[i];
-    while (current_pair != NULL) {
-      pair_to_destroy = current_pair;
-      current_pair = current_pair->next;
-      destroy_pair(pair_to_destroy);
-    }
-  }
+//   for (int i = 0 ; i < ht->capacity; i++) {
+//     current_pair = ht->storage[i];
+//     while (current_pair != NULL) {
+//       pair_to_destroy = current_pair;
+//       current_pair = current_pair->next;
+//       destroy_pair(pair_to_destroy);
+//     }
+//   }
 
-  free(ht->storage);
-  free(ht);
-}
+//   free(ht->storage);
+//   free(ht);
+// }
 
-HashTable *hash_table_resize(HashTable *ht)
-{
-  HashTable *new_ht = create_hash_table(2 * ht->capacity);
+// HashTable *hash_table_resize(HashTable *ht)
+// {
+//   HashTable *new_ht = create_hash_table(2 * ht->capacity);
 
-  LinkedPair *current_pair;
-  for (int i = 0 ; i < ht->capacity ; i++) {
-    current_pair = ht->storage[i];
-    while (current_pair != NULL) {
-      hash_table_insert(new_ht, current_pair->key, current_pair->value);
-      current_pair = current_pair->next;
-    }
-  }
+//   LinkedPair *current_pair;
+//   for (int i = 0 ; i < ht->capacity ; i++) {
+//     current_pair = ht->storage[i];
+//     while (current_pair != NULL) {
+//       hash_table_insert(new_ht, current_pair->key, current_pair->value);
+//       current_pair = current_pair->next;
+//     }
+//   }
 
-  destroy_hash_table(ht);
-  return new_ht;
-}
+//   destroy_hash_table(ht);
+//   return new_ht;
+// }
